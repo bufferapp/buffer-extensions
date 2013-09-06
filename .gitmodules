@@ -1,0 +1,9 @@
+[submodule "chrome"]
+	path = chrome
+	url = git@github.com:bufferapp/buffer-chrome.git
+[submodule "safari"]
+	path = safari
+	url = git@github.com:bufferapp/buffer-safari.git
+[submodule "firefox"]
+	path = firefox
+	url = git@github.com:bufferapp/buffer-firefox.git
