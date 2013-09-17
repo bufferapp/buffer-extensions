@@ -3,7 +3,7 @@ module.exports=function(grunt){
     // Current versions. Update when compiling new ones.
     var versions = {
         chrome: '2.3.26',
-        firefox: '2.2.20',
+        firefox: '2.2.21',
         safari: '2.2.1'
     }
 
@@ -34,6 +34,17 @@ module.exports=function(grunt){
             'mv buffer-<%= versions.firefox %>.xpi ../releases',
             'cd ../../'
             ].join('&&')
+        },
+        firefox_test: {
+            options: {
+                stdout: true
+            },
+            command: [
+            'cd sdks/firefox',
+            'source bin/activate',
+            'cd ../../firefox/firefox',
+            'cfx run'
+            ].join('&&')
         }
       }
     });
@@ -45,4 +56,5 @@ module.exports=function(grunt){
     grunt.registerTask('default',['shell']);
     grunt.registerTask('chrome',['shell:chrome']);
     grunt.registerTask('firefox',['shell:firefox']);
+    grunt.registerTask('firefox-test', ['shell:firefox_test']);
 };
