@@ -2,8 +2,8 @@ module.exports=function(grunt){
 
     // Current versions. Update when compiling new ones.
     var versions = {
-        chrome: '2.3.26',
-        firefox: '2.2.21',
+        chrome: '2.3.27',
+        firefox: '2.2.22',
         safari: '2.2.1'
     }
 
