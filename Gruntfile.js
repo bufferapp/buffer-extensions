@@ -1,11 +1,10 @@
 module.exports=function(grunt){
 
-    // Current versions. Update when compiling new ones.
+    // Read the current versions from each subrepo's respective config file
     var versions = {
-        chrome: '2.3.29',
-        firefox: '2.2.25',
-        safari: '2.2.1'
-    }
+        chrome:  grunt.file.readJSON( 'chrome/chrome/manifest.json' ).version,
+        firefox: grunt.file.readJSON( 'firefox/firefox/package.json' ).version
+    };
 
     grunt.initConfig({
       pkg: grunt.file.readJSON('package.json'),
@@ -52,9 +51,9 @@ module.exports=function(grunt){
     //  Load Shell commands plugin
     grunt.loadNpmTasks('grunt-shell');
     
-    //  Defaulttask(s).
-    grunt.registerTask('default',['shell']);
-    grunt.registerTask('chrome',['shell:chrome']);
-    grunt.registerTask('firefox',['shell:firefox']);
-    grunt.registerTask('firefox-test', ['shell:firefox_test']);
+    // Tasks
+    grunt.registerTask('default',       'Build all extentions',         ['shell']);
+    grunt.registerTask('chrome',        'Build the chrome extension',   ['shell:chrome']);
+    grunt.registerTask('firefox',       'Build the firefox extension',  ['shell:firefox']);
+    grunt.registerTask('firefox-test',  'Test the build in firefox',    ['shell:firefox_test']);
 };
