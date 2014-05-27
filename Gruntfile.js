@@ -44,6 +44,23 @@ module.exports=function(grunt){
                     'cd ../../firefox/firefox',
                     'cfx run'
                 ].join('&&')
+            },
+
+            // Update the shared code repos by doing a git pull in each subdirectory
+            update_shared_repos: {
+                options: {
+                    stdout: true
+                },
+                command: [
+                    'cd chrome/chrome/data/shared',
+                    'git pull',
+                    'cd ../../../../',
+                    'cd firefox/firefox/data/shared',
+                    'git pull',
+                    'cd ../../../../',
+                    'cd safari/safari/buffer.safariextension/data/shared',
+                    'git pull'
+                ].join('&&')
             }
         },
 
@@ -57,13 +74,35 @@ module.exports=function(grunt){
         }
     });
 
+    // Warns the developer to bump the version number if there is already a build
+    grunt.registerTask('version-exists', 'Check if an extension\'s version exists', function(version){
+        var paths = {
+            chrome:  'chrome/releases/chrome-' + versions.chrome + '.zip',
+            firefox: 'firefox/releases/buffer-' + versions.firefox + '.xpi'
+        };
+
+        if (version in paths && !grunt.file.exists( paths[ version ] )){
+            return true;
+        }
+
+        grunt.log.error('Build at that version number exists. Please increment version number.');
+        return false;
+    });
+
     //  Load Shell commands plugin
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-mocha');
 
     // Tasks
-    grunt.registerTask('default',       'Build all extentions',         ['mocha', 'shell']);
-    grunt.registerTask('chrome',        'Build the chrome extension',   ['mocha', 'shell:chrome']);
-    grunt.registerTask('firefox',       'Build the firefox extension',  ['mocha', 'shell:firefox']);
+    grunt.registerTask('default',       'Build all extentions', [
+        'mocha',
+        'version-exists:chrome',
+        'shell:chrome',
+        'version-exists:firefox',
+        'shell:firefox'
+    ]);
+    grunt.registerTask('chrome',        'Build the chrome extension',   ['mocha', 'version-exists:chrome', 'shell:chrome']);
+    grunt.registerTask('firefox',       'Build the firefox extension',  ['mocha', 'version-exists:firefox', 'shell:firefox']);
     grunt.registerTask('firefox-test',  'Test the build in firefox',    ['shell:firefox_test']);
+    grunt.registerTask('update-shared', 'Pull shared repo in all extensions', ['shell:update_shared_repos',]);
 };
