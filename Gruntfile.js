@@ -1,3 +1,5 @@
+var path = require('path');
+
 module.exports=function(grunt){
 
     // Read the current versions from each subrepo's respective config file
@@ -46,19 +48,30 @@ module.exports=function(grunt){
                 ].join('&&')
             },
 
-            // Update the shared code repos by doing a git pull in each subdirectory
+            update_browser_repos: {
+                options: {
+                    stdout: true
+                },
+                command: [
+                    'cd ' + path.join(__dirname, 'chrome'),
+                    'git pull',
+                    'cd ' + path.join(__dirname, 'firefox'),
+                    'git pull',
+                    'cd ' + path.join(__dirname, 'safari'),
+                    'git pull'
+                ].join('&&')
+            },
+
             update_shared_repos: {
                 options: {
                     stdout: true
                 },
                 command: [
-                    'cd chrome/chrome/data/shared',
+                    'cd ' + path.join(__dirname, 'chrome/chrome/data/shared'),
                     'git pull',
-                    'cd ../../../../',
-                    'cd firefox/firefox/data/shared',
+                    'cd ' + path.join(__dirname, 'firefox/firefox/data/shared'),
                     'git pull',
-                    'cd ../../../../',
-                    'cd safari/safari/buffer.safariextension/data/shared',
+                    'cd ' + path.join(__dirname, 'safari/safari/buffer.safariextension/data/shared'),
                     'git pull'
                 ].join('&&')
             }
@@ -104,5 +117,6 @@ module.exports=function(grunt){
     grunt.registerTask('chrome',        'Build the chrome extension',   ['mocha', 'version-exists:chrome', 'shell:chrome']);
     grunt.registerTask('firefox',       'Build the firefox extension',  ['mocha', 'version-exists:firefox', 'shell:firefox']);
     grunt.registerTask('firefox-test',  'Test the build in firefox',    ['shell:firefox_test']);
-    grunt.registerTask('update-shared', 'Pull shared repo in all extensions', ['shell:update_shared_repos',]);
+    grunt.registerTask('update-shared', 'Pull shared repo in all extensions', ['shell:update_shared_repos']);
+    grunt.registerTask('update-repos',  'Pull latest changes in all repos', ['shell:update_browser_repos', 'shell:update_shared_repos']);
 };
