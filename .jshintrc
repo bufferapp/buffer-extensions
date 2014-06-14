@@ -1,0 +1,17 @@
+{
+  "browser": true,
+  "devel": true,
+  "curly": false,
+  "eqnull": true,
+  "eqeqeq": false,
+  "undef": true,
+  "globals": {
+    "xt" :true,
+    "$": true
+  },
+  "-W033": true,
+  "-W069": true,
+  "-W099": true,
+  "-W093": true,
+  "-W030": true
+}
