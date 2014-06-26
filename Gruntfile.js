@@ -1,3 +1,4 @@
+/* jshint node:true */
 var path = require('path');
 
 module.exports=function(grunt){
@@ -114,9 +115,29 @@ module.exports=function(grunt){
         'version-exists:firefox',
         'shell:firefox'
     ]);
-    grunt.registerTask('chrome',        'Build the chrome extension',   ['mocha', 'version-exists:chrome', 'shell:chrome']);
-    grunt.registerTask('firefox',       'Build the firefox extension',  ['mocha', 'version-exists:firefox', 'shell:firefox']);
-    grunt.registerTask('firefox-test',  'Test the build in firefox',    ['shell:firefox_test']);
-    grunt.registerTask('update-shared', 'Pull shared repo in all extensions', ['shell:update_shared_repos']);
-    grunt.registerTask('update-repos',  'Pull latest changes in all repos', ['shell:update_browser_repos', 'shell:update_shared_repos']);
+
+    grunt.registerTask('chrome',        'Build the chrome extension',   [
+        'mocha',
+        'version-exists:chrome',
+        'shell:chrome'
+    ]);
+    
+    grunt.registerTask('firefox',       'Build the firefox extension',  [
+        'mocha',
+        'version-exists:firefox',
+        'shell:firefox'
+    ]);
+
+    grunt.registerTask('firefox-test',  'Test the build in firefox',    [
+        'shell:firefox_test'
+    ]);
+
+    grunt.registerTask('update-shared', 'Pull shared repo in all extensions', [
+        'shell:update_shared_repos'
+    ]);
+
+    grunt.registerTask('update-repos',  'Pull latest changes in all repos', [
+        'shell:update_browser_repos',
+        'shell:update_shared_repos'
+    ]);
 };
