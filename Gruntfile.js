@@ -1,143 +1,175 @@
 /* jshint node:true */
 var path = require('path');
 
-module.exports=function(grunt){
+module.exports = function(grunt) {
 
-    // Read the current versions from each subrepo's respective config file
-    var versions = {
-        chrome:  grunt.file.readJSON( 'chrome/chrome/manifest.json' ).version,
-        firefox: grunt.file.readJSON( 'firefox/firefox/package.json' ).version
+  var configFile = {
+    chrome:  'chrome/chrome/manifest.json',
+    firefox: 'firefox/firefox/package.json',
+    safari:  'safari/safari/buffer.safariextension/Info.plist'
+  }
+
+  var pkg = grunt.file.readJSON('package.json');
+
+  grunt.initConfig({
+    pkg: pkg,
+    shell: {
+      chrome: {                    
+        options: {                      
+          stdout: false
+        },
+        command: [
+          'cd chrome',
+          'zip -r releases/chrome-<%= pkg.version %>.zip chrome',
+          'cd ../'
+        ].join('&&')
+      },
+      firefox: {
+        options: {
+          stdout: true
+        },
+        command: [
+          'cd sdks/firefox',
+          'source bin/activate',
+          'cd ../../firefox/firefox',
+          'cfx xpi --update-link https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer-<%= pkg.version %>.xpi --update-url https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer.update.rdf',
+          'mv buffer.xpi buffer-<%= pkg.version %>.xpi',
+          'mv buffer-<%= pkg.version %>.xpi ../releases',
+          'cd ../../'
+        ].join('&&')
+      },
+      firefox_test: {
+        options: {
+          stdout: true
+        },
+        command: [
+          'cd sdks/firefox',
+          'source bin/activate',
+          'cd ../../firefox/firefox',
+          'cfx run'
+        ].join('&&')
+      },
+
+      update_browser_repos: {
+        options: {
+          stdout: true
+        },
+        command: [
+          'cd ' + path.join(__dirname, 'chrome'),
+          'git pull',
+          'cd ' + path.join(__dirname, 'firefox'),
+          'git pull',
+          'cd ' + path.join(__dirname, 'safari'),
+          'git pull'
+        ].join('&&')
+      },
+
+      update_shared_repos: {
+        options: {
+          stdout: true
+        },
+        command: [
+          'cd ' + path.join(__dirname, 'chrome/chrome/data/shared'),
+          'git pull',
+          'cd ' + path.join(__dirname, 'firefox/firefox/data/shared'),
+          'git pull',
+          'cd ' + path.join(__dirname, 'safari/safari/buffer.safariextension/data/shared'),
+          'git pull'
+        ].join('&&')
+      }
+    },
+
+    mocha: {
+      test: {
+        src: ['tests/**/*.html']
+      },
+      options: {
+        run: true
+      }
+    }
+  });
+
+  // Warns the developer to bump the version number if there is already a build
+  grunt.registerTask('version-exists', 'Check if an extension\'s version exists', function(version){
+    var paths = {
+      chrome:  'chrome/releases/chrome-' + pkg.version + '.zip',
+      firefox: 'firefox/releases/buffer-' + pkg.version + '.xpi'
     };
 
-    grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
-        versions: versions,
-        shell: {
-            chrome: {                    
-                options: {                      
-                    stdout: false
-                },
-                command: [
-                    'cd chrome',
-                    'zip -r releases/chrome-<%= versions.chrome %>.zip chrome',
-                    'cd ../'
-                ].join('&&')
-            },
-            firefox: {
-                options: {
-                    stdout: true
-                },
-                command: [
-                    'cd sdks/firefox',
-                    'source bin/activate',
-                    'cd ../../firefox/firefox',
-                    'cfx xpi --update-link https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer-<%= versions.firefox %>.xpi --update-url https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer.update.rdf',
-                    'mv buffer.xpi buffer-<%= versions.firefox %>.xpi',
-                    'mv buffer-<%= versions.firefox %>.xpi ../releases',
-                    'cd ../../'
-                ].join('&&')
-            },
-            firefox_test: {
-                options: {
-                    stdout: true
-                },
-                command: [
-                    'cd sdks/firefox',
-                    'source bin/activate',
-                    'cd ../../firefox/firefox',
-                    'cfx run'
-                ].join('&&')
-            },
+    if (version in paths && !grunt.file.exists( paths[ version ] )){
+      return true;
+    }
 
-            update_browser_repos: {
-                options: {
-                    stdout: true
-                },
-                command: [
-                    'cd ' + path.join(__dirname, 'chrome'),
-                    'git pull',
-                    'cd ' + path.join(__dirname, 'firefox'),
-                    'git pull',
-                    'cd ' + path.join(__dirname, 'safari'),
-                    'git pull'
-                ].join('&&')
-            },
+    grunt.log.error('Build at that version number exists. Please increment version number.');
+    return false;
+  });
 
-            update_shared_repos: {
-                options: {
-                    stdout: true
-                },
-                command: [
-                    'cd ' + path.join(__dirname, 'chrome/chrome/data/shared'),
-                    'git pull',
-                    'cd ' + path.join(__dirname, 'firefox/firefox/data/shared'),
-                    'git pull',
-                    'cd ' + path.join(__dirname, 'safari/safari/buffer.safariextension/data/shared'),
-                    'git pull'
-                ].join('&&')
-            }
-        },
-
-        mocha: {
-            test: {
-                src: ['tests/**/*.html']
-            },
-            options: {
-                run: true
-            }
-        }
-    });
-
-    // Warns the developer to bump the version number if there is already a build
-    grunt.registerTask('version-exists', 'Check if an extension\'s version exists', function(version){
-        var paths = {
-            chrome:  'chrome/releases/chrome-' + versions.chrome + '.zip',
-            firefox: 'firefox/releases/buffer-' + versions.firefox + '.xpi'
-        };
-
-        if (version in paths && !grunt.file.exists( paths[ version ] )){
-            return true;
-        }
-
-        grunt.log.error('Build at that version number exists. Please increment version number.');
-        return false;
-    });
-
-    //  Load Shell commands plugin
-    grunt.loadNpmTasks('grunt-shell');
-    grunt.loadNpmTasks('grunt-mocha');
-
-    // Tasks
-    grunt.registerTask('default',       'Build all extentions', [
-        'mocha',
-        'version-exists:chrome',
-        'shell:chrome',
-        'version-exists:firefox',
-        'shell:firefox'
-    ]);
-
-    grunt.registerTask('chrome',        'Build the chrome extension',   [
-        'mocha',
-        'version-exists:chrome',
-        'shell:chrome'
-    ]);
+  grunt.registerTask('update-versions', 'Updates versions in each extension\'s config file', function(version){
     
-    grunt.registerTask('firefox',       'Build the firefox extension',  [
-        'mocha',
-        'version-exists:firefox',
-        'shell:firefox'
-    ]);
+    var chromeConfig = grunt.file.readJSON( configFile.chrome );
+    var firefoxConfig = grunt.file.readJSON( configFile.firefox );
 
-    grunt.registerTask('firefox-test',  'Test the build in firefox',    [
-        'shell:firefox_test'
-    ]);
+    chromeConfig.version = pkg.version;
+    firefoxConfig.version = pkg.version;
 
-    grunt.registerTask('update-shared', 'Pull shared repo in all extensions', [
-        'shell:update_shared_repos'
-    ]);
+    grunt.file.write(configFile.chrome, JSON.stringify(chromeConfig, null, '  '));
+    grunt.file.write(configFile.firefox, JSON.stringify(chromeConfig, null, '  '));
 
-    grunt.registerTask('update-repos',  'Pull latest changes in all repos', [
-        'shell:update_browser_repos',
-        'shell:update_shared_repos'
-    ]);
+    var safariConfigXml = grunt.file.read(configFile.safari);
+
+    // Replace the version in the xml string
+    safariConfigXml = safariConfigXml
+      .replace(
+        /(<key>CFBundleShortVersionString<\/key>\n\t<string>).*(<\/string>)/gi,
+        '$1' + pkg.version + '$2'
+      )
+      .replace(
+        /(<key>CFBundleVersion<\/key>\n\t<string>).*(<\/string>)/gi,
+        '$1' + pkg.version + '$2'
+      );
+
+    grunt.file.write(configFile.safari, safariConfigXml);
+
+  });
+
+  //  Load Shell commands plugin
+  grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-mocha');
+
+  // Tasks
+  grunt.registerTask('default',       'Build all extentions', [
+    'mocha',
+    'update-versions',
+    'version-exists:chrome',
+    'shell:chrome',
+    'version-exists:firefox',
+    'shell:firefox'
+  ]);
+
+  grunt.registerTask('chrome',        'Build the chrome extension',   [
+    'mocha',
+    'update-versions',
+    'version-exists:chrome',
+    'shell:chrome'
+  ]);
+  
+  grunt.registerTask('firefox',       'Build the firefox extension',  [
+    'mocha',
+    'update-versions',
+    'version-exists:firefox',
+    'shell:firefox'
+  ]);
+
+  grunt.registerTask('firefox-test',  'Test the build in firefox',    [
+    'shell:firefox_test'
+  ]);
+
+  grunt.registerTask('update-shared', 'Pull shared repo in all extensions', [
+    'shell:update_shared_repos'
+  ]);
+
+  grunt.registerTask('update-repos',  'Pull latest changes in all repos', [
+    'shell:update_browser_repos',
+    'shell:update_shared_repos'
+  ]);
 };
