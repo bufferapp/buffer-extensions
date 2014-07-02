@@ -113,7 +113,7 @@ module.exports = function(grunt) {
     firefoxConfig.version = pkg.version;
 
     grunt.file.write(configFile.chrome, JSON.stringify(chromeConfig, null, '  '));
-    grunt.file.write(configFile.firefox, JSON.stringify(chromeConfig, null, '  '));
+    grunt.file.write(configFile.firefox, JSON.stringify(firefoxConfig, null, '  '));
 
     var safariConfigXml = grunt.file.read(configFile.safari);
 
