@@ -5,6 +5,13 @@ For help with using this repo and it's nested repos see the [Buffer hackpad](htt
 
 ## Install
 
+After cloning the repo, you'll need all of the subrepos. To pull in nested subrepos:
+
+    $ git submodule update --recursive --merge --init
+
+To install all necessary packages for grunt:
+
+    $ npm install -g grunt-cli
     $ npm install
 
 ## Grunt helper tasks
