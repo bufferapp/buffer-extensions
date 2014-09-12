@@ -14,6 +14,10 @@ To install all necessary packages for grunt:
     $ npm install -g grunt-cli
     $ npm install
 
+Download the Firefox addon SDK:
+
+    $ git clone https://github.com/mozilla/addon-sdk.git sdks/firefox
+
 ## Grunt helper tasks
 
 Update the nested "buffer-<browser>" repos.
