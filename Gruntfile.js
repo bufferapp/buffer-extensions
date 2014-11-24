@@ -90,13 +90,15 @@ module.exports = function(grunt) {
   });
 
   // Warns the developer to bump the version number if there is already a build
-  grunt.registerTask('version-exists', 'Check if an extension\'s version exists', function(version){
+  grunt.registerTask('version-exists', 
+    'Check if an extension\'s version exists', function(browser) {
+
     var paths = {
       chrome:  'chrome/releases/chrome-' + pkg.version + '.zip',
       firefox: 'firefox/releases/buffer-' + pkg.version + '.xpi'
     };
 
-    if (version in paths && !grunt.file.exists( paths[ version ] )){
+    if (browser in paths && !grunt.file.exists( paths[ browser ] )){
       return true;
     }
 
@@ -104,31 +106,51 @@ module.exports = function(grunt) {
     return false;
   });
 
-  grunt.registerTask('update-versions', 'Updates versions in each extension\'s config file', function(version){
-    
-    var chromeConfig = grunt.file.readJSON( configFile.chrome );
-    var firefoxConfig = grunt.file.readJSON( configFile.firefox );
 
-    chromeConfig.version = pkg.version;
-    firefoxConfig.version = pkg.version;
+  var updateVersion = {
 
-    grunt.file.write(configFile.chrome, JSON.stringify(chromeConfig, null, '  '));
-    grunt.file.write(configFile.firefox, JSON.stringify(firefoxConfig, null, '  '));
+    chrome: function(version) {
+      var chromeConfig = grunt.file.readJSON( configFile.chrome );
+      chromeConfig.version = version;
+      grunt.file.write(configFile.chrome, JSON.stringify(chromeConfig, null, '  '));
+    },
 
-    var safariConfigXml = grunt.file.read(configFile.safari);
+    firefox: function(version) {
+      var firefoxConfig = grunt.file.readJSON( configFile.firefox );
+      firefoxConfig.version = version;
+      grunt.file.write(configFile.firefox, JSON.stringify(firefoxConfig, null, '  '));
+    },
 
-    // Replace the version in the xml string
-    safariConfigXml = safariConfigXml
-      .replace(
-        /(<key>CFBundleShortVersionString<\/key>\n\t<string>).*(<\/string>)/gi,
-        '$1' + pkg.version + '$2'
-      )
-      .replace(
-        /(<key>CFBundleVersion<\/key>\n\t<string>).*(<\/string>)/gi,
-        '$1' + pkg.version + '$2'
-      );
+    safari: function(version) {
+      var safariConfigXml = grunt.file.read(configFile.safari);
 
-    grunt.file.write(configFile.safari, safariConfigXml);
+      // Replace the version in the xml string
+      safariConfigXml = safariConfigXml
+        .replace(
+          /(<key>CFBundleShortVersionString<\/key>\n\t<string>).*(<\/string>)/gi,
+          '$1' + version + '$2'
+        )
+        .replace(
+          /(<key>CFBundleVersion<\/key>\n\t<string>).*(<\/string>)/gi,
+          '$1' + version + '$2'
+        );
+      grunt.file.write(configFile.safari, safariConfigXml);
+    }
+
+  };
+
+  grunt.registerTask('update-versions', 
+    'Updates versions in each extension\'s config file', function(browser) {
+
+    var version = pkg.version;
+
+    if (browser in updateVersion) {
+      return updateVersion[ browser ](version);
+    }
+
+    for (var key in updateVersion) {
+      updateVersion[ key ](version);
+    }
 
   });
 
@@ -148,14 +170,14 @@ module.exports = function(grunt) {
 
   grunt.registerTask('chrome',        'Build the chrome extension',   [
     'mocha',
-    'update-versions',
+    'update-versions:chrome',
     'version-exists:chrome',
     'shell:chrome'
   ]);
   
   grunt.registerTask('firefox',       'Build the firefox extension',  [
     'mocha',
-    'update-versions',
+    'update-versions:firefox',
     'version-exists:firefox',
     'shell:firefox'
   ]);
