@@ -38,6 +38,20 @@ module.exports = function(grunt) {
           'cd ../../'
         ].join('&&')
       },
+      firefox_addon: {
+        options: {
+          stdout: true
+        },
+        command: [
+          'cd sdks/firefox',
+          'source bin/activate',
+          'cd ../../firefox/firefox',
+          'cfx xpi',
+          'mv buffer.xpi buffer-<%= pkg.version %>-addon-edition.xpi',
+          'mv buffer-<%= pkg.version %>-addon-edition.xpi ../releases',
+          'cd ../../'
+        ].join('&&')
+      },
       firefox_test: {
         options: {
           stdout: true
@@ -95,7 +109,8 @@ module.exports = function(grunt) {
 
     var paths = {
       chrome:  'chrome/releases/chrome-' + pkg.version + '.zip',
-      firefox: 'firefox/releases/buffer-' + pkg.version + '.xpi'
+      firefox: 'firefox/releases/buffer-' + pkg.version + '.xpi',
+      firefox_addon: 'firefox/releases/buffer-' + pkg.version + '-addon-edition.xpi'
     };
 
     if (browser in paths && !grunt.file.exists( paths[ browser ] )){
@@ -180,6 +195,13 @@ module.exports = function(grunt) {
     'update-versions:firefox',
     'version-exists:firefox',
     'shell:firefox'
+  ]);
+
+  grunt.registerTask('firefox_addon', 'Build the firefox extension for the add-on directory',  [
+    'mocha',
+    'update-versions:firefox',
+    'version-exists:firefox_addon',
+    'shell:firefox_addon'
   ]);
 
   grunt.registerTask('firefox-test',  'Test the build in firefox',    [
