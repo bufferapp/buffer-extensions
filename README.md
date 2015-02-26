@@ -32,8 +32,9 @@ upload to https://addons.mozilla.org/en-US/firefox/
 * **Safari** - Get a Safari developer cert from a team member and use the Safari
 Extension Builder to create a `.safariextz` file for upload via the Buffer admin
 * **Opera** - Check out the "opera" branch in the `buffer-chrome` repo, merge
-master into that branch then run `grunt chrome`. Rename this file and upload it
-to https://addons.opera.com/en/extensions/
+master into that branch. Grab the `chrome.pem` key from the Buffer Dropbox, and
+use that to build the `.nex` file in the panel at "opera://extensions". Upload
+the file to https://addons.opera.com/en/extensions/
 
 ## Grunt helper tasks
 
