@@ -14,8 +14,8 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: pkg,
     shell: {
-      chrome: {                    
-        options: {                      
+      chrome: {
+        options: {
           stdout: false
         },
         command: [
@@ -32,7 +32,10 @@ module.exports = function(grunt) {
           'cd sdks/firefox',
           'source bin/activate',
           'cd ../../firefox/firefox',
-          'cfx xpi --update-link https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer-<%= pkg.version %>.xpi --update-url https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer.update.rdf',
+          [ 'cfx xpi',
+            '--update-link https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer-<%= pkg.version %>.xpi',
+            '--update-url https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer.update.rdf'
+          ].join(' '),
           'mv buffer.xpi buffer-<%= pkg.version %>.xpi',
           'mv buffer-<%= pkg.version %>.xpi ../releases',
           'cd ../../'
@@ -104,7 +107,7 @@ module.exports = function(grunt) {
   });
 
   // Warns the developer to bump the version number if there is already a build
-  grunt.registerTask('version-exists', 
+  grunt.registerTask('version-exists',
     'Check if an extension\'s version exists', function(browser) {
 
     var paths = {
@@ -154,7 +157,7 @@ module.exports = function(grunt) {
 
   };
 
-  grunt.registerTask('update-versions', 
+  grunt.registerTask('update-versions',
     'Updates versions in each extension\'s config file', function(browser) {
 
     var version = pkg.version;
@@ -189,7 +192,7 @@ module.exports = function(grunt) {
     'version-exists:chrome',
     'shell:chrome'
   ]);
-  
+
   grunt.registerTask('firefox',       'Build the firefox extension',  [
     'mocha',
     'update-versions:firefox',
