@@ -24,7 +24,7 @@ module.exports = function(grunt) {
           'cd ../'
         ].join('&&')
       },
-      firefox: {
+      'firefox-hosted': {
         options: {
           stdout: true
         },
@@ -41,7 +41,7 @@ module.exports = function(grunt) {
           'cd ../../'
         ].join('&&')
       },
-      firefox_addon: {
+      'firefox-addon': {
         options: {
           stdout: true
         },
@@ -197,14 +197,9 @@ module.exports = function(grunt) {
     'mocha',
     'update-versions:firefox',
     'version-exists:firefox',
-    'shell:firefox'
-  ]);
-
-  grunt.registerTask('firefox_addon', 'Build the firefox extension for the add-on directory',  [
-    'mocha',
-    'update-versions:firefox',
+    'shell:firefox-hosted',
     'version-exists:firefox_addon',
-    'shell:firefox_addon'
+    'shell:firefox-addon'
   ]);
 
   grunt.registerTask('firefox-test',  'Test the build in firefox',    [
