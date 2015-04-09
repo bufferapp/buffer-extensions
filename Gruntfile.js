@@ -178,12 +178,8 @@ module.exports = function(grunt) {
 
   // Tasks
   grunt.registerTask('default',       'Build all extentions', [
-    'mocha',
-    'update-versions',
-    'version-exists:chrome',
-    'shell:chrome',
-    'version-exists:firefox',
-    'shell:firefox'
+    'chrome',
+    'firefox'
   ]);
 
   grunt.registerTask('chrome',        'Build the chrome extension',   [
