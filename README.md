@@ -27,7 +27,7 @@ Download the Firefox addon SDK and checkout the most recent stable
 `.zip` file.
 * **Firefox** - Run `grunt firefox` to build the `.xpi` for upload via the
 Buffer admin
-* **Firefox Addon Store** - Run `grunt firefox_addon` to build the `.xpi` for
+* **Firefox Addon Store** - Run `grunt firefox` to build the `.xpi` for
 upload to https://addons.mozilla.org/en-US/firefox/
 * **Safari** - Get a Safari developer cert from a team member and use the Safari
 Extension Builder to create a `.safariextz` file for upload via the Buffer admin
