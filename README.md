@@ -17,6 +17,11 @@ To install all necessary packages for grunt:
 Download the Firefox addon SDK and checkout the most recent stable
 [release](https://github.com/mozilla/addon-sdk/releases):
 
+    $ curl https://ftp.mozilla.org/pub/mozilla.org/labs/jetpack/addon-sdk-1.17.tar.gz | tar xz
+    $ mv addon-sdk-1.17 sdks/firefox
+
+If this file is not available use the SDK github repo
+
     $ git clone https://github.com/mozilla/addon-sdk.git sdks/firefox
     $ cd sdks/firefox
     $ git checkout tags/1.17
