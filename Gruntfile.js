@@ -1,18 +1,40 @@
 /* jshint node:true */
 var path = require('path');
 
-module.exports = function(grunt) {
+var CONFIG_FILE = {
+  CHROME:  'chrome/chrome/manifest.json',
+  FIREFOX: 'firefox/firefox/package.json',
+  SAFARI:  'safari/safari/buffer.safariextension/Info.plist'
+};
 
-  var configFile = {
-    chrome:  'chrome/chrome/manifest.json',
-    firefox: 'firefox/firefox/package.json',
-    safari:  'safari/safari/buffer.safariextension/Info.plist'
+// This config is to switch parameters in the package.json between the
+// self-hosted and Mozilla Add-on site hosted extension
+var FIREFOX_CONFIG = {
+  HOSTED: {
+    fullName: "Buffer for Firefox",
+    id: "firefox@buffer",
+    name: "buffer-for-firefox"
+  },
+  ADDON: {
+    fullName: "Buffer",
+    id: "jid1-zUyU7TGKwejAyA",
+    name: "buffer"
   }
+};
+
+
+module.exports = function(grunt) {
 
   var pkg = grunt.file.readJSON('package.json');
 
   grunt.initConfig({
+
     pkg: pkg,
+
+    FIREFOX_CONFIG: FIREFOX_CONFIG,
+
+    FIREFOX_STATIC_DIR: 'https://s3.amazonaws.com/buffer-static/extensions/firefox/',
+
     shell: {
       chrome: {
         options: {
@@ -33,11 +55,11 @@ module.exports = function(grunt) {
           'source bin/activate',
           'cd ../../firefox/firefox',
           [ 'cfx xpi',
-            '--update-link https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer-<%= pkg.version %>.xpi',
-            '--update-url https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer.update.rdf'
+            '--update-link <%= FIREFOX_STATIC_DIR %>buffer-<%= pkg.version %>.xpi',
+            '--update-url <%= FIREFOX_STATIC_DIR %>buffer.update.rdf'
           ].join(' '),
-          'mv buffer.xpi buffer-<%= pkg.version %>.xpi',
-          'mv buffer-<%= pkg.version %>.xpi ../releases',
+          'mv <%= FIREFOX_CONFIG.HOSTED.name %>.xpi ../releases/buffer-<%= pkg.version %>.xpi',
+          'rm <%= FIREFOX_CONFIG.HOSTED.name %>.update.rdf',
           'cd ../../'
         ].join('&&')
       },
@@ -50,8 +72,7 @@ module.exports = function(grunt) {
           'source bin/activate',
           'cd ../../firefox/firefox',
           'cfx xpi',
-          'mv buffer.xpi buffer-<%= pkg.version %>-addon-edition.xpi',
-          'mv buffer-<%= pkg.version %>-addon-edition.xpi ../releases',
+          'mv <%= FIREFOX_CONFIG.ADDON.name %>.xpi ../releases/buffer-<%= pkg.version %>-addon-edition.xpi',
           'cd ../../'
         ].join('&&')
       },
@@ -128,19 +149,19 @@ module.exports = function(grunt) {
   var updateVersion = {
 
     chrome: function(version) {
-      var chromeConfig = grunt.file.readJSON( configFile.chrome );
+      var chromeConfig = grunt.file.readJSON( CONFIG_FILE.CHROME );
       chromeConfig.version = version;
-      grunt.file.write(configFile.chrome, JSON.stringify(chromeConfig, null, '  '));
+      grunt.file.write(CONFIG_FILE.CHROME, JSON.stringify(chromeConfig, null, '  '));
     },
 
     firefox: function(version) {
-      var firefoxConfig = grunt.file.readJSON( configFile.firefox );
+      var firefoxConfig = grunt.file.readJSON( CONFIG_FILE.FIREFOX );
       firefoxConfig.version = version;
-      grunt.file.write(configFile.firefox, JSON.stringify(firefoxConfig, null, '  '));
+      grunt.file.write(CONFIG_FILE.FIREFOX, JSON.stringify(firefoxConfig, null, '  '));
     },
 
     safari: function(version) {
-      var safariConfigXml = grunt.file.read(configFile.safari);
+      var safariConfigXml = grunt.file.read(CONFIG_FILE.SAFARI);
 
       // Replace the version in the xml string
       safariConfigXml = safariConfigXml
@@ -152,7 +173,7 @@ module.exports = function(grunt) {
           /(<key>CFBundleVersion<\/key>\n\t<string>).*(<\/string>)/gi,
           '$1' + version + '$2'
         );
-      grunt.file.write(configFile.safari, safariConfigXml);
+      grunt.file.write(CONFIG_FILE.SAFARI, safariConfigXml);
     }
 
   };
@@ -172,33 +193,65 @@ module.exports = function(grunt) {
 
   });
 
+  grunt.registerTask('set-firefox-config',
+    'Updates the Firefox config package.json for a specific build', function(version) {
+
+    // The addon store version is the default in the repo
+    if (!version) version = 'ADDON';
+    version = version.toUpperCase();
+
+    if (Object.keys(FIREFOX_CONFIG).indexOf(version) === -1)
+      throw new Error('"' + version +'" is not a valid configuration key');
+
+    var firefoxConfig = grunt.file.readJSON( CONFIG_FILE.FIREFOX );
+
+    for (var key in FIREFOX_CONFIG[version]) {
+      firefoxConfig[key] = FIREFOX_CONFIG[version][key];
+    }
+
+    grunt.file.write(CONFIG_FILE.FIREFOX, JSON.stringify(firefoxConfig, null, '  '));
+
+    grunt.log.ok('Firefox package.json successfully updated to ' + version);
+  });
+
   //  Load Shell commands plugin
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-mocha');
 
   // Tasks
-  grunt.registerTask('default',       'Build all extentions', [
+  grunt.registerTask('default', 'Build all extensions', [
     'chrome',
     'firefox'
   ]);
 
-  grunt.registerTask('chrome',        'Build the chrome extension',   [
+  grunt.registerTask('chrome', 'Build the chrome extension', [
     'mocha',
     'update-versions:chrome',
     'version-exists:chrome',
     'shell:chrome'
   ]);
 
-  grunt.registerTask('firefox',       'Build the firefox extension',  [
-    'mocha',
-    'update-versions:firefox',
+  grunt.registerTask('firefox-hosted', 'Build the hosted firefox extension', [
     'version-exists:firefox',
-    'shell:firefox-hosted',
+    'set-firefox-config:hosted',
+    'shell:firefox-hosted'
+  ]);
+
+  grunt.registerTask('firefox-addon', 'Build the addon listed firefox extension', [
     'version-exists:firefox_addon',
+    'set-firefox-config:addon',
     'shell:firefox-addon'
   ]);
 
-  grunt.registerTask('firefox-test',  'Test the build in firefox',    [
+
+  grunt.registerTask('firefox', 'Build the firefox extension', [
+    'mocha',
+    'update-versions:firefox',
+    'firefox-hosted',
+    'firefox-addon'
+  ]);
+
+  grunt.registerTask('firefox-test', 'Test the build in firefox', [
     'shell:firefox_test'
   ]);
 
@@ -206,7 +259,7 @@ module.exports = function(grunt) {
     'shell:update_shared_repos'
   ]);
 
-  grunt.registerTask('update-repos',  'Pull latest changes in all repos', [
+  grunt.registerTask('update-repos', 'Pull latest changes in all repos', [
     'shell:update_browser_repos',
     'shell:update_shared_repos'
   ]);
