@@ -1,6 +1,6 @@
 {
   "name": "buffer-extensions",
-  "version": "2.12.6",
+  "version": "2.12.7",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-shell": "~0.3.1",
