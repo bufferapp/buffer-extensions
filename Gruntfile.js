@@ -129,6 +129,13 @@ module.exports = function(grunt) {
       }
     },
 
+    concat: {
+      firefoxBackgroundPage: {
+        src: ['firefox/firefox/dist/lib/main.js', 'firefox/firefox/dist/data/shared/buffermetrics-bg-shim.js', 'firefox/firefox/dist/data/shared/buffermetrics.js'],
+        dest: 'firefox/firefox/dist/lib/main.js'
+      }
+    },
+
     copy: {
       firefoxSrcToDist: {
         cwd: 'firefox/firefox/src/',
@@ -233,6 +240,7 @@ module.exports = function(grunt) {
   //  Load Shell commands plugin
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-mocha');
+  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-clean');
 
@@ -267,6 +275,7 @@ module.exports = function(grunt) {
     'update-versions:firefox',
     'clean:firefoxDist',
     'copy:firefoxSrcToDist',
+    'concat:firefoxBackgroundPage',
     'firefox-hosted',
     'firefox-addon'
   ]);
