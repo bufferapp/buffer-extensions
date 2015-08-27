@@ -2,10 +2,13 @@
   "name": "buffer-extensions",
   "version": "2.12.9",
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-shell": "~0.3.1",
     "chai": "^1.9.1",
-    "mocha": "^1.18.2",
-    "grunt-mocha": "^0.4.10"
+    "grunt": "~0.4.1",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-copy": "^0.8.1",
+    "grunt-mocha": "^0.4.10",
+    "grunt-shell": "~0.3.1",
+    "mocha": "^1.18.2"
   }
 }

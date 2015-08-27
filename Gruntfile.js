@@ -3,7 +3,10 @@ var path = require('path');
 
 var CONFIG_FILE = {
   CHROME:  'chrome/chrome/manifest.json',
-  FIREFOX: 'firefox/firefox/package.json',
+  FIREFOX: {
+    SRC: 'firefox/firefox/src/package.json',
+    DIST: 'firefox/firefox/dist/package.json'
+  },
   SAFARI:  'safari/safari/buffer.safariextension/Info.plist'
 };
 
@@ -38,7 +41,7 @@ module.exports = function(grunt) {
     shell: {
       chrome: {
         options: {
-          stdout: false
+          stdout: true
         },
         command: [
           'cd chrome',
@@ -53,14 +56,14 @@ module.exports = function(grunt) {
         command: [
           'cd sdks/firefox',
           'source bin/activate',
-          'cd ../../firefox/firefox',
+          'cd ../../firefox/firefox/dist',
           [ 'cfx xpi',
             '--update-link <%= FIREFOX_STATIC_DIR %>buffer-<%= pkg.version %>.xpi',
             '--update-url <%= FIREFOX_STATIC_DIR %>buffer.update.rdf'
           ].join(' '),
-          'mv <%= FIREFOX_CONFIG.HOSTED.name %>.xpi ../releases/buffer-<%= pkg.version %>.xpi',
+          'mv <%= FIREFOX_CONFIG.HOSTED.name %>.xpi ../../releases/buffer-<%= pkg.version %>.xpi',
           'rm <%= FIREFOX_CONFIG.HOSTED.name %>.update.rdf',
-          'cd ../../'
+          'cd ../../../'
         ].join('&&')
       },
       'firefox-addon': {
@@ -70,10 +73,10 @@ module.exports = function(grunt) {
         command: [
           'cd sdks/firefox',
           'source bin/activate',
-          'cd ../../firefox/firefox',
+          'cd ../../firefox/firefox/dist',
           'cfx xpi',
-          'mv <%= FIREFOX_CONFIG.ADDON.name %>.xpi ../releases/buffer-<%= pkg.version %>-addon-edition.xpi',
-          'cd ../../'
+          'mv <%= FIREFOX_CONFIG.ADDON.name %>.xpi ../../releases/buffer-<%= pkg.version %>-addon-edition.xpi',
+          'cd ../../../'
         ].join('&&')
       },
       firefox_test: {
@@ -83,7 +86,7 @@ module.exports = function(grunt) {
         command: [
           'cd sdks/firefox',
           'source bin/activate',
-          'cd ../../firefox/firefox',
+          'cd ../../firefox/firefox/dist',
           'cfx run'
         ].join('&&')
       },
@@ -109,7 +112,7 @@ module.exports = function(grunt) {
         command: [
           'cd ' + path.join(__dirname, 'chrome/chrome/data/shared'),
           'git pull',
-          'cd ' + path.join(__dirname, 'firefox/firefox/data/shared'),
+          'cd ' + path.join(__dirname, 'firefox/firefox/src/data/shared'),
           'git pull',
           'cd ' + path.join(__dirname, 'safari/safari/buffer.safariextension/data/shared'),
           'git pull'
@@ -124,6 +127,19 @@ module.exports = function(grunt) {
       options: {
         run: true
       }
+    },
+
+    copy: {
+      firefoxSrcToDist: {
+        cwd: 'firefox/firefox/src/',
+        src: '**',
+        dest: 'firefox/firefox/dist/',
+        expand: true
+      }
+    },
+
+    clean: {
+      firefoxDist: 'firefox/firefox/dist/'
     }
   });
 
@@ -155,9 +171,9 @@ module.exports = function(grunt) {
     },
 
     firefox: function(version) {
-      var firefoxConfig = grunt.file.readJSON( CONFIG_FILE.FIREFOX );
+      var firefoxConfig = grunt.file.readJSON( CONFIG_FILE.FIREFOX.SRC );
       firefoxConfig.version = version;
-      grunt.file.write(CONFIG_FILE.FIREFOX, JSON.stringify(firefoxConfig, null, '  '));
+      grunt.file.write(CONFIG_FILE.FIREFOX.SRC, JSON.stringify(firefoxConfig, null, '  '));
     },
 
     safari: function(version) {
@@ -203,13 +219,13 @@ module.exports = function(grunt) {
     if (Object.keys(FIREFOX_CONFIG).indexOf(version) === -1)
       throw new Error('"' + version +'" is not a valid configuration key');
 
-    var firefoxConfig = grunt.file.readJSON( CONFIG_FILE.FIREFOX );
+    var firefoxConfig = grunt.file.readJSON( CONFIG_FILE.FIREFOX.DIST );
 
     for (var key in FIREFOX_CONFIG[version]) {
       firefoxConfig[key] = FIREFOX_CONFIG[version][key];
     }
 
-    grunt.file.write(CONFIG_FILE.FIREFOX, JSON.stringify(firefoxConfig, null, '  '));
+    grunt.file.write(CONFIG_FILE.FIREFOX.DIST, JSON.stringify(firefoxConfig, null, '  '));
 
     grunt.log.ok('Firefox package.json successfully updated to ' + version);
   });
@@ -217,6 +233,8 @@ module.exports = function(grunt) {
   //  Load Shell commands plugin
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-mocha');
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-clean');
 
   // Tasks
   grunt.registerTask('default', 'Build all extensions', [
@@ -247,6 +265,8 @@ module.exports = function(grunt) {
   grunt.registerTask('firefox', 'Build the firefox extension', [
     'mocha',
     'update-versions:firefox',
+    'clean:firefoxDist',
+    'copy:firefoxSrcToDist',
     'firefox-hosted',
     'firefox-addon'
   ]);
