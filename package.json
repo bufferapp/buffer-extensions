@@ -1,6 +1,6 @@
 {
   "name": "buffer-extensions",
-  "version": "2.13.11",
+  "version": "2.13.12",
   "devDependencies": {
     "chai": "^1.9.1",
     "grunt": "~0.4.1",
