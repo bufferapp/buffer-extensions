@@ -14,13 +14,14 @@ var CONFIG_FILE = {
 // self-hosted and Mozilla Add-on site hosted extension
 var FIREFOX_CONFIG = {
   HOSTED: {
-    fullName: "Buffer for Firefox",
+    title: "Buffer for Firefox",
     id: "firefox@buffer",
-    name: "buffer-for-firefox"
+    name: "buffer-for-firefox",
+    updateURL: "https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer.update.rdf"
   },
   ADDON: {
-    fullName: "Buffer",
-    id: "jid1-zUyU7TGKwejAyA",
+    title: "Buffer",
+    id: "jid1-zUyU7TGKwejAyA@jetpack",
     name: "buffer"
   }
 };
@@ -54,15 +55,9 @@ module.exports = function(grunt) {
           stdout: true
         },
         command: [
-          'cd sdks/firefox',
-          'source bin/activate',
-          'cd ../../firefox/firefox/dist',
-          [ 'cfx xpi',
-            '--update-link <%= FIREFOX_STATIC_DIR %>buffer-<%= pkg.version %>.xpi',
-            '--update-url <%= FIREFOX_STATIC_DIR %>buffer.update.rdf'
-          ].join(' '),
-          'mv <%= FIREFOX_CONFIG.HOSTED.name %>.xpi ../../releases/buffer-<%= pkg.version %>.xpi',
-          'rm <%= FIREFOX_CONFIG.HOSTED.name %>.update.rdf',
+          'cd firefox/firefox/src',
+          'jpm xpi',
+          'mv <%= FIREFOX_CONFIG.HOSTED.id %>-<%= pkg.version %>.xpi ../../releases/buffer-<%= pkg.version %>.xpi',
           'cd ../../../'
         ].join('&&')
       },
@@ -71,11 +66,9 @@ module.exports = function(grunt) {
           stdout: true
         },
         command: [
-          'cd sdks/firefox',
-          'source bin/activate',
-          'cd ../../firefox/firefox/dist',
-          'cfx xpi',
-          'mv <%= FIREFOX_CONFIG.ADDON.name %>.xpi ../../releases/buffer-<%= pkg.version %>-addon-edition.xpi',
+          'cd firefox/firefox/src',
+          'jpm xpi',
+          'mv <%= FIREFOX_CONFIG.ADDON.id %>-<%= pkg.version %>.xpi ../../releases/buffer-<%= pkg.version %>-addon-edition.xpi',
           'cd ../../../'
         ].join('&&')
       },
@@ -84,10 +77,9 @@ module.exports = function(grunt) {
           stdout: true
         },
         command: [
-          'cd sdks/firefox',
-          'source bin/activate',
-          'cd ../../firefox/firefox/dist',
-          'cfx run'
+          'cd firefox/firefox/src',
+          'jpm test',
+          'cd ../../../'
         ].join('&&')
       },
 
@@ -232,7 +224,7 @@ module.exports = function(grunt) {
       firefoxConfig[key] = FIREFOX_CONFIG[version][key];
     }
 
-    grunt.file.write(CONFIG_FILE.FIREFOX.DIST, JSON.stringify(firefoxConfig, null, '  '));
+    grunt.file.write(CONFIG_FILE.FIREFOX.SRC, JSON.stringify(firefoxConfig, null, '  '));
 
     grunt.log.ok('Firefox package.json successfully updated to ' + version);
   });
