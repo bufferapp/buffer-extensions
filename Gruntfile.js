@@ -17,12 +17,14 @@ var FIREFOX_CONFIG = {
     title: "Buffer for Firefox",
     id: "firefox@buffer",
     name: "buffer-for-firefox",
+    icon: "resource://firefox-at-buffer/data/shared/img/Icon.png",
     updateURL: "https://s3.amazonaws.com/buffer-static/extensions/firefox/buffer.update.rdf"
   },
   ADDON: {
     title: "Buffer",
     id: "jid1-zUyU7TGKwejAyA@jetpack",
-    name: "buffer"
+    name: "buffer",
+    icon: "resource://jid1-zUyU7TGKwejAyA-at-jetpack/data/shared/img/Icon.png"
   }
 };
 
