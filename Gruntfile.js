@@ -153,7 +153,7 @@ module.exports = function(grunt) {
       var firefoxConfig = grunt.file.readJSON(CONFIG_FILE.CHROME);
       firefoxConfig.applications = {
         gecko: {
-          update_url: 'https://static.buffer.com/extensions/firefox/updates.json',
+          update_url: 'https://s3.amazonaws.com/buffer-static/extensions/firefox/updates.json',
         },
       };
       grunt.file.write(CONFIG_FILE.CHROME, JSON.stringify(firefoxConfig, null, '  '));
