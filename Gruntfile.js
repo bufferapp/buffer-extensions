@@ -21,17 +21,29 @@ module.exports = function(grunt) {
         },
         command: [
           'cd chrome',
-          'zip -r releases/chrome-<%= pkg.version %>.zip chrome',
+          'zip -qr releases/chrome-<%= pkg.version %>.zip chrome',
           'cd ../'
         ].join('&&')
       },
-      firefox: {
+
+      firefox_amo: {
         options: {
           stdout: true
         },
         command: [
           'cd chrome/chrome',
-          'zip -r ../releases/firefox-<%= pkg.version %>.zip .',
+          'zip -qr ../releases/firefox-amo-<%= pkg.version %>.zip .',
+          'cd ../../'
+        ].join('&&')
+      },
+
+      firefox_self_hosted: {
+        options: {
+          stdout: true
+        },
+        command: [
+          'cd chrome/chrome',
+          'zip -qr ../releases/firefox-self-hosted-<%= pkg.version %>.zip .',
           'cd ../../'
         ].join('&&')
       },
@@ -77,7 +89,7 @@ module.exports = function(grunt) {
 
     var paths = {
       chrome:  'chrome/releases/chrome-' + pkg.version + '.zip',
-      firefox: 'chrome/releases/firefox-' + pkg.version + '.zip',
+      firefox: 'chrome/releases/firefox-amo-' + pkg.version + '.zip',
     };
 
     if (browser in paths && !grunt.file.exists( paths[ browser ] )){
@@ -136,6 +148,24 @@ module.exports = function(grunt) {
 
   });
 
+  grunt.registerTask('add-firefox-manifest-update-url',
+    'Adds the application.gecko.update_url field to Firefox\'s manifest', function() {
+      var firefoxConfig = grunt.file.readJSON(CONFIG_FILE.CHROME);
+      firefoxConfig.applications = {
+        gecko: {
+          update_url: 'https://static.buffer.com/extensions/firefox/updates.json',
+        },
+      };
+      grunt.file.write(CONFIG_FILE.CHROME, JSON.stringify(firefoxConfig, null, '  '));
+  });
+
+  grunt.registerTask('remove-firefox-manifest-update-url',
+    'Removes the application.gecko.update_url field from Firefox\'s manifest', function() {
+      var firefoxConfig = grunt.file.readJSON(CONFIG_FILE.CHROME);
+      delete firefoxConfig.applications;
+      grunt.file.write(CONFIG_FILE.CHROME, JSON.stringify(firefoxConfig, null, '  '));
+  });
+
   //  Load Shell commands plugin
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-mocha');
@@ -160,7 +190,10 @@ module.exports = function(grunt) {
     'mocha',
     'update-versions:firefox',
     'version-exists:firefox',
-    'shell:firefox'
+    'shell:firefox_amo',
+    'add-firefox-manifest-update-url',
+    'shell:firefox_self_hosted',
+    'remove-firefox-manifest-update-url'
   ]);
 
   grunt.registerTask('update-shared', 'Pull shared repo in all extensions', [
