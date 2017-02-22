@@ -4,9 +4,3 @@
 [submodule "safari"]
 	path = safari
 	url = git@github.com:bufferapp/buffer-safari.git
-[submodule "firefox"]
-	path = firefox
-	url = git@github.com:bufferapp/buffer-firefox.git
-[submodule "sdks/firefox"]
-	path = sdks/firefox
-	url = https://github.com/mozilla/addon-sdk.git
