@@ -9,6 +9,11 @@
     <script src="../node_modules/mocha/mocha.js"></script>
     <script src="../node_modules/chai/chai.js"></script>
 
+    <!-- Mock xt.data -->
+    <script>
+      var xt = { data: { get: function() {} } };
+    </script>
+
     <!-- Scripts to test -->
     <script src="../chrome/chrome/data/shared/buffer-overlay.js"></script>
 
@@ -20,7 +25,7 @@
     <script src="./shared.js"></script>
 
     <script charset="utf-8">
-      
+
       // Only tests run in real browser, injected script run if options.run == true
       if (navigator.userAgent.indexOf('PhantomJS') < 0) {
         mocha.run();
