@@ -1,6 +1,6 @@
 {
   "name": "buffer-extensions",
-  "version": "3.3.5",
+  "version": "3.3.6",
   "devDependencies": {
     "chai": "^1.9.1",
     "eslint": "^3.19.0",
