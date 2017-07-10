@@ -31,9 +31,13 @@ module.exports = function(grunt) {
           stdout: true
         },
         command: [
-          'cd chrome/chrome',
+          'cp -r chrome/chrome chrome/chrome-temp-copy',
+          'cd chrome/chrome-temp-copy',
+          'find . -name ".DS_Store" -delete',
+          'find . -name ".git" -delete',
           'zip -qr ../releases/firefox-amo-<%= pkg.version %>.zip .',
-          'cd ../../'
+          'cd ../../',
+          'rm -rf chrome/chrome-temp-copy'
         ].join('&&')
       },
 
@@ -42,9 +46,13 @@ module.exports = function(grunt) {
           stdout: true
         },
         command: [
-          'cd chrome/chrome',
+          'cp -r chrome/chrome chrome/chrome-temp-copy',
+          'cd chrome/chrome-temp-copy',
+          'find . -name ".DS_Store" -delete',
+          'find . -name ".git" -delete',
           'zip -qr ../releases/firefox-self-hosted-<%= pkg.version %>.zip .',
-          'cd ../../'
+          'cd ../../',
+          'rm -rf chrome/chrome-temp-copy'
         ].join('&&')
       },
 
