@@ -1,6 +1,6 @@
 {
   "name": "buffer-extensions",
-  "version": "3.4.2",
+  "version": "3.4.3",
   "devDependencies": {
     "chai": "^1.9.1",
     "eslint": "^3.19.0",
@@ -9,9 +9,12 @@
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-copy": "^0.8.1",
-    "grunt-mocha": "^0.4.10",
+    "grunt-mocha": "^1.2.0",
     "grunt-shell": "~0.3.1",
-    "mocha": "^1.18.2"
+    "mocha": "^6.1.4"
   },
-  "browserslist": ["last 2 versions", "Safari >= 9"]
+  "browserslist": [
+    "last 2 versions",
+    "Safari >= 9"
+  ]
 }
